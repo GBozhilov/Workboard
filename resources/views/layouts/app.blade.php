@@ -30,6 +30,14 @@
                     >
                         Home
                     </a>
+                    @auth
+                        <a
+                            href="{{ route('dashboard') }}"
+                            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                        >
+                            Dashboard
+                        </a>
+                    @endauth
                     <span
                         class="cursor-default rounded-lg px-3 py-2 text-sm font-medium text-slate-400"
                         title="Coming in a later stage"
@@ -43,11 +51,39 @@
                         Tasks
                     </span>
                     <span
-                        class="cursor-default rounded-lg px-3 py-2 text-sm font-medium text-slate-400"
+                        class="hidden cursor-default rounded-lg px-3 py-2 text-sm font-medium text-slate-400 sm:inline"
                         title="Coming in a later stage"
                     >
                         Team
                     </span>
+
+                    @guest
+                        <a
+                            href="{{ route('login') }}"
+                            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                        >
+                            Log in
+                        </a>
+                        <a
+                            href="{{ route('register') }}"
+                            class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-500"
+                        >
+                            Register
+                        </a>
+                    @else
+                        <span class="hidden px-2 text-sm text-slate-500 sm:inline">
+                            {{ auth()->user()->name }}
+                        </span>
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                            @csrf
+                            <button
+                                type="submit"
+                                class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                            >
+                                Log out
+                            </button>
+                        </form>
+                    @endguest
                 </nav>
             </div>
         </header>
