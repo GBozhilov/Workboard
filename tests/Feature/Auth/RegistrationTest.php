@@ -22,7 +22,7 @@ class RegistrationTest extends TestCase
     public function test_new_user_can_register(): void
     {
         $response = $this->post(route('register'), [
-            'name' => 'Georgi Bozhilov',
+            'name' => 'Test User',
             'email' => 'georgi@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -38,7 +38,7 @@ class RegistrationTest extends TestCase
     public function test_password_is_stored_hashed_not_plain_text(): void
     {
         $this->post(route('register'), [
-            'name' => 'Georgi Bozhilov',
+            'name' => 'Test User',
             'email' => 'georgi@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',

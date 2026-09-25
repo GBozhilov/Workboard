@@ -1,58 +1,84 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# WorkBoard
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+WorkBoard is a learning project: a project-management and task-tracking web application built with Laravel. It is developed in stages to practice authentication, Eloquent, policies, APIs, queues, testing, and related Laravel topics.
 
-## About Laravel
+**Status:** Active development. Stages completed so far include the WorkBoard foundation (UI/layout), user authentication, and authenticated **Projects** CRUD with per-user ownership.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP 8.3+ / Laravel 13
+- MySQL (Docker Compose)
+- Redis (available in Docker; used in later stages)
+- Blade, Tailwind CSS, Vite
+- PHPUnit
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Requirements
 
-## Learning Laravel
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose (recommended for this repo)
+- Or: PHP 8.3+, Composer, Node.js/npm, and MySQL locally
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Local setup (Docker)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. Clone the repository and enter the project directory.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+2. Copy the environment file and generate an application key:
 
-## Agentic Development
+   ```bash
+   cp .env.example .env
+   docker compose run --rm composer install
+   docker compose exec php php artisan key:generate
+   ```
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+3. Start services (PHP-FPM, Nginx, MySQL, Redis):
+
+   ```bash
+   docker compose up -d
+   ```
+
+4. Run migrations:
+
+   ```bash
+   docker compose exec php php artisan migrate
+   ```
+
+5. Install frontend dependencies and build assets (or run the dev server):
+
+   ```bash
+   npm install
+   npm run build
+   ```
+
+   For development with hot reload:
+
+   ```bash
+   npm run dev
+   ```
+
+6. Open the app at [http://localhost:8081](http://localhost:8081).
+
+Default Docker MySQL credentials match `.env.example` (`laravel` / `laravel`). These are **local development placeholders only**—do not use them in production.
+
+## Running tests
+
+Tests use an in-memory SQLite database (see `phpunit.xml`) and do not require MySQL:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+docker compose exec php php artisan test
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Project structure (high level)
 
-## Contributing
+- `app/` — HTTP layer, models, policies, form requests
+- `resources/views/` — Blade templates (WorkBoard UI)
+- `routes/web.php` — Web routes
+- `database/migrations/` — Schema
+- `tests/` — PHPUnit feature and unit tests
+- `docker-compose.yml` — Local stack (Nginx, PHP, MySQL, Redis)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Security note
 
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Never commit `.env` or real API keys, passwords, or `APP_KEY` values. Use `.env.example` as a template with safe placeholders only.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+No license file is included in this repository yet. All rights reserved unless you add a license later.
