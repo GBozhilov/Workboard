@@ -38,12 +38,21 @@
                             Dashboard
                         </a>
                     @endauth
-                    <span
-                        class="cursor-default rounded-lg px-3 py-2 text-sm font-medium text-slate-400"
-                        title="Coming in a later stage"
-                    >
-                        Projects
-                    </span>
+                    @auth
+                        <a
+                            href="{{ route('projects.index') }}"
+                            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                        >
+                            Projects
+                        </a>
+                    @else
+                        <span
+                            class="cursor-default rounded-lg px-3 py-2 text-sm font-medium text-slate-400"
+                            title="Log in to manage projects"
+                        >
+                            Projects
+                        </span>
+                    @endauth
                     <span
                         class="cursor-default rounded-lg px-3 py-2 text-sm font-medium text-slate-400"
                         title="Coming in a later stage"

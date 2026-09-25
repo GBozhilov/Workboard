@@ -10,8 +10,16 @@
                 Hello, {{ auth()->user()->name }}
             </h1>
             <p class="mt-4 max-w-2xl text-base leading-relaxed text-slate-600">
-                You are signed in to WorkBoard. Project and task features will be added in upcoming stages.
+                You are signed in to WorkBoard. Manage your projects or continue building out the app in upcoming stages.
             </p>
+            <div class="mt-8">
+                <a
+                    href="{{ route('projects.index') }}"
+                    class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+                >
+                    View projects
+                </a>
+            </div>
         </div>
     </div>
 @endsection
