@@ -15,18 +15,31 @@
                 WorkBoard is your workspace for organizing projects, tasks, and team collaboration.
                 You are on the foundation release — core features will land in upcoming learning stages.
             </p>
+            {{-- Hero actions: projects link uses named routes; tasks stay disabled until Stage 4. --}}
             <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
+                @auth
+                    {{-- Authenticated users go straight to their project list. --}}
+                    <a
+                        href="{{ route('projects.index') }}"
+                        class="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 sm:w-auto"
+                    >
+                        View Projects
+                    </a>
+                @else
+                    {{-- Guests must sign in before accessing projects. --}}
+                    <a
+                        href="{{ route('login') }}"
+                        class="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 sm:w-auto"
+                    >
+                        View Projects
+                    </a>
+                @endauth
+                {{-- Placeholder only; task CRUD is not implemented yet. --}}
                 <button
                     type="button"
-                    class="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 sm:w-auto"
-                    title="Available in a later stage"
-                >
-                    View Projects
-                </button>
-                <button
-                    type="button"
-                    class="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 sm:w-auto"
-                    title="Available in a later stage"
+                    disabled
+                    class="inline-flex w-full cursor-not-allowed items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-400 opacity-60 shadow-sm sm:w-auto"
+                    title="Tasks are coming in a later stage"
                 >
                     Create Task
                 </button>
