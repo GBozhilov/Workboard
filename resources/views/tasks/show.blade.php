@@ -32,7 +32,11 @@
                             <form
                                 method="POST"
                                 action="{{ route('projects.tasks.destroy', [$project, $task]) }}"
-                                onsubmit="return confirm('Delete this task?');"
+                                data-confirm="true"
+                                data-confirm-title="Delete task"
+                                data-confirm-message="Delete this task?"
+                                data-confirm-label="Delete task"
+                                data-confirm-destructive
                             >
                                 @csrf
                                 @method('DELETE')

@@ -28,7 +28,11 @@
                             <form
                                 method="POST"
                                 action="{{ route('projects.destroy', $project) }}"
-                                onsubmit="return confirm('Delete this project? This cannot be undone.');"
+                                data-confirm="true"
+                                data-confirm-title="Delete project"
+                                data-confirm-message="Delete this project? This cannot be undone."
+                                data-confirm-label="Delete project"
+                                data-confirm-destructive
                             >
                                 @csrf
                                 @method('DELETE')
@@ -76,7 +80,11 @@
                                     <form
                                         method="POST"
                                         action="{{ route('projects.members.destroy', [$project, $member]) }}"
-                                        onsubmit="return confirm('Remove this member from the project?');"
+                                        data-confirm="true"
+                                        data-confirm-title="Remove member"
+                                        data-confirm-message="Remove this member from the project?"
+                                        data-confirm-label="Remove member"
+                                        data-confirm-destructive
                                     >
                                         @csrf
                                         @method('DELETE')
