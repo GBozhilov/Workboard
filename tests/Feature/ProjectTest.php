@@ -92,6 +92,24 @@ class ProjectTest extends TestCase
         $this->assertDatabaseCount('projects', 0);
     }
 
+    public function test_project_update_rejects_invalid_attributes(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->for($user)->create(['name' => 'Valid name']);
+
+        $response = $this->actingAs($user)->from(route('projects.edit', $project))->put(
+            route('projects.update', $project),
+            ['name' => '', 'description' => 'Still valid']
+        );
+
+        $response->assertRedirect(route('projects.edit', $project));
+        $response->assertSessionHasErrors('name');
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            'name' => 'Valid name',
+        ]);
+    }
+
     public function test_user_can_view_their_own_project(): void
     {
         $user = User::factory()->create();

@@ -254,4 +254,57 @@ class TaskTest extends TestCase
         $response->assertRedirect(route('projects.tasks.create', $project));
         $response->assertSessionHasErrors(['status', 'priority']);
     }
+
+    public function test_invalid_due_date_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->for($user)->create();
+
+        $response = $this->actingAs($user)->from(route('projects.tasks.create', $project))->post(
+            route('projects.tasks.store', $project),
+            $this->validTaskPayload(['due_date' => 'not-a-date'])
+        );
+
+        $response->assertRedirect(route('projects.tasks.create', $project));
+        $response->assertSessionHasErrors('due_date');
+        $this->assertDatabaseCount('tasks', 0);
+    }
+
+    public function test_nested_task_route_returns_not_found_when_task_belongs_to_another_project(): void
+    {
+        $user = User::factory()->create();
+        $projectA = Project::factory()->for($user)->create();
+        $projectB = Project::factory()->for($user)->create();
+        $taskOnB = Task::factory()->for($projectB)->create(['title' => 'Wrong nest']);
+
+        $this->actingAs($user)
+            ->get(route('projects.tasks.show', [$projectA, $taskOnB]))
+            ->assertNotFound();
+
+        $this->actingAs($user)
+            ->get(route('projects.tasks.edit', [$projectA, $taskOnB]))
+            ->assertNotFound();
+    }
+
+    public function test_assigned_to_cannot_be_mass_assigned_through_task_forms(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $project = Project::factory()->for($user)->create();
+
+        $this->actingAs($user)->post(
+            route('projects.tasks.store', $project),
+            $this->validTaskPayload([
+                'title' => 'No assignee yet',
+                'assigned_to' => $otherUser->id,
+            ])
+        );
+
+        $this->assertDatabaseHas('tasks', [
+            'title' => 'No assignee yet',
+            'project_id' => $project->id,
+            'assigned_to' => null,
+        ]);
+    }
+
 }

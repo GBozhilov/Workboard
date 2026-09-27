@@ -24,6 +24,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('projects', ProjectController::class);
 
+    // Scoped binding: nested {task} must belong to the parent {project}.
     Route::resource('projects.tasks', TaskController::class)->scoped([
         'task' => 'project_id',
     ]);

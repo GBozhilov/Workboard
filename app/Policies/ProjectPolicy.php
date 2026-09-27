@@ -4,9 +4,12 @@ namespace App\Policies;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Policies\Concerns\ChecksProjectOwnership;
 
 class ProjectPolicy
 {
+    use ChecksProjectOwnership;
+
     public function viewAny(User $user): bool
     {
         return true;
@@ -14,7 +17,7 @@ class ProjectPolicy
 
     public function view(User $user, Project $project): bool
     {
-        return $this->owns($user, $project);
+        return $this->userOwnsProject($user, $project);
     }
 
     public function create(User $user): bool
@@ -24,16 +27,11 @@ class ProjectPolicy
 
     public function update(User $user, Project $project): bool
     {
-        return $this->owns($user, $project);
+        return $this->userOwnsProject($user, $project);
     }
 
     public function delete(User $user, Project $project): bool
     {
-        return $this->owns($user, $project);
-    }
-
-    private function owns(User $user, Project $project): bool
-    {
-        return $user->id === $project->user_id;
+        return $this->userOwnsProject($user, $project);
     }
 }

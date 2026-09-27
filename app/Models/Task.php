@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'status',
     'priority',
     'due_date',
-    'assigned_to',
 ])]
 class Task extends Model
 {
