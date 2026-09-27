@@ -35,6 +35,8 @@ WorkBoard is a learning project: a project-management and task-tracking web appl
    docker compose up -d
    ```
 
+   The PHP entrypoint creates Laravel cache/log directories and maps the container `www-data` user to the same numeric UID/GID as the bind-mounted project (auto-detected from `/var/www`, or set `APP_USER_ID` / `APP_GROUP_ID` in `.env`). That lets PHP-FPM write under `storage/` and `bootstrap/cache/` without changing ownership of your WSL files. Prefer `docker compose exec -u www-data php php artisan …` over running Artisan as root. After changing `Dockerfile` or `docker/php/entrypoint.sh`, rebuild with `docker compose build php && docker compose up -d php`.
+
 4. Run migrations:
 
    ```bash

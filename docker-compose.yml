@@ -5,6 +5,9 @@ services:
             dockerfile: Dockerfile
         container_name: laravel-playground-php
         working_dir: /var/www
+        environment:
+            APP_USER_ID: ${APP_USER_ID:-}
+            APP_GROUP_ID: ${APP_GROUP_ID:-}
         volumes:
             - ./:/var/www
         depends_on:

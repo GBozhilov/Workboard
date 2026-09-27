@@ -47,5 +47,48 @@
                 <p class="mt-8 text-sm text-slate-500">No description provided.</p>
             @endif
         </div>
+
+        <div class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-900">Tasks</h2>
+                    <p class="mt-1 text-sm text-slate-500">Work items for this project.</p>
+                </div>
+                <a
+                    href="{{ route('projects.tasks.create', $project) }}"
+                    class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+                >
+                    Create task
+                </a>
+            </div>
+
+            @if ($project->tasks->isEmpty())
+                <p class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-8 text-center text-sm text-slate-600">
+                    No tasks yet. Create the first task for this project.
+                </p>
+            @else
+                <ul class="mt-6 divide-y divide-slate-100">
+                    @foreach ($project->tasks as $task)
+                        <li class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <a
+                                    href="{{ route('projects.tasks.show', [$project, $task]) }}"
+                                    class="font-medium text-slate-900 hover:text-indigo-600"
+                                >
+                                    {{ $task->title }}
+                                </a>
+                                @if ($task->due_date)
+                                    <p class="mt-1 text-xs text-slate-500">Due {{ $task->due_date->format('M j, Y') }}</p>
+                                @endif
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <x-task-status-badge :status="$task->status" />
+                                <x-task-priority-badge :priority="$task->priority" />
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
     </div>
 @endsection

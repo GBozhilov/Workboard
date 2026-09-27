@@ -12,3 +12,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www
+
+COPY docker/php/entrypoint.sh /usr/local/bin/workboard-php-entrypoint
+RUN chmod +x /usr/local/bin/workboard-php-entrypoint
+
+ENTRYPOINT ["workboard-php-entrypoint"]
+CMD ["php-fpm"]

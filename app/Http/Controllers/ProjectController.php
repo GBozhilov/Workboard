@@ -41,6 +41,8 @@ class ProjectController extends Controller
     {
         Gate::authorize('view', $project);
 
+        $project->load(['tasks' => fn ($query) => $query->latest()]);
+
         return view('projects.show', compact('project'));
     }
 
