@@ -18,28 +18,34 @@
                         <x-task-priority-badge :priority="$task->priority" />
                     </div>
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    <a
-                        href="{{ route('projects.tasks.edit', [$project, $task]) }}"
-                        class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                    >
-                        Edit
-                    </a>
-                    <form
-                        method="POST"
-                        action="{{ route('projects.tasks.destroy', [$project, $task]) }}"
-                        onsubmit="return confirm('Delete this task?');"
-                    >
-                        @csrf
-                        @method('DELETE')
-                        <button
-                            type="submit"
-                            class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-                        >
-                            Delete
-                        </button>
-                    </form>
-                </div>
+                @canany(['update', 'delete'], $task)
+                    <div class="flex flex-wrap gap-2">
+                        @can('update', $task)
+                            <a
+                                href="{{ route('projects.tasks.edit', [$project, $task]) }}"
+                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                            >
+                                Edit
+                            </a>
+                        @endcan
+                        @can('delete', $task)
+                            <form
+                                method="POST"
+                                action="{{ route('projects.tasks.destroy', [$project, $task]) }}"
+                                onsubmit="return confirm('Delete this task?');"
+                            >
+                                @csrf
+                                @method('DELETE')
+                                <button
+                                    type="submit"
+                                    class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                                >
+                                    Delete
+                                </button>
+                            </form>
+                        @endcan
+                    </div>
+                @endcanany
             </div>
 
             @if ($task->due_date)

@@ -4,11 +4,11 @@ namespace App\Policies;
 
 use App\Models\Project;
 use App\Models\User;
-use App\Policies\Concerns\ChecksProjectOwnership;
+use App\Policies\Concerns\ChecksProjectMembership;
 
 class ProjectPolicy
 {
-    use ChecksProjectOwnership;
+    use ChecksProjectMembership;
 
     public function viewAny(User $user): bool
     {
@@ -17,7 +17,7 @@ class ProjectPolicy
 
     public function view(User $user, Project $project): bool
     {
-        return $this->userOwnsProject($user, $project);
+        return $this->userBelongsToProject($user, $project);
     }
 
     public function create(User $user): bool
@@ -31,6 +31,11 @@ class ProjectPolicy
     }
 
     public function delete(User $user, Project $project): bool
+    {
+        return $this->userOwnsProject($user, $project);
+    }
+
+    public function manageMembers(User $user, Project $project): bool
     {
         return $this->userOwnsProject($user, $project);
     }

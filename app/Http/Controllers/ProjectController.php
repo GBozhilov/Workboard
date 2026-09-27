@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProjectRole;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
@@ -13,8 +14,8 @@ class ProjectController extends Controller
 {
     public function index(): View
     {
-        $projects = auth()->user()
-            ->projects()
+        $projects = Project::query()
+            ->accessibleBy(auth()->user())
             ->latest()
             ->get();
 
@@ -32,6 +33,10 @@ class ProjectController extends Controller
     {
         $project = $request->user()->projects()->create($request->validated());
 
+        $project->members()->attach($request->user()->id, [
+            'role' => ProjectRole::Owner->value,
+        ]);
+
         return redirect()
             ->route('projects.show', $project)
             ->with('status', 'Project created successfully.');
@@ -41,7 +46,10 @@ class ProjectController extends Controller
     {
         Gate::authorize('view', $project);
 
-        $project->load(['tasks' => fn ($query) => $query->latest()]);
+        $project->load([
+            'tasks' => fn ($query) => $query->latest(),
+            'members',
+        ]);
 
         return view('projects.show', compact('project'));
     }

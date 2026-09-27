@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,11 @@ Route::middleware('auth')->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::resource('projects', ProjectController::class);
+
+    Route::post('projects/{project}/members', [ProjectMemberController::class, 'store'])
+        ->name('projects.members.store');
+    Route::delete('projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])
+        ->name('projects.members.destroy');
 
     // Scoped binding: nested {task} must belong to the parent {project}.
     Route::resource('projects.tasks', TaskController::class)->scoped([

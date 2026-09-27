@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\ProjectRole;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,5 +24,14 @@ class ProjectFactory extends Factory
             'name' => fake()->sentence(3),
             'description' => fake()->optional()->paragraph(),
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Project $project): void {
+            $project->members()->syncWithoutDetaching([
+                $project->user_id => ['role' => ProjectRole::Owner->value],
+            ]);
+        });
     }
 }
