@@ -37,6 +37,30 @@ class ProjectTest extends TestCase
         $response->assertDontSee('Other User Secret Project');
     }
 
+    public function test_projects_index_links_each_card_to_project_show(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->for($user)->create(['name' => 'Open Me Board']);
+
+        $this->actingAs($user)
+            ->get(route('projects.index'))
+            ->assertOk()
+            ->assertSee(route('projects.show', $project), false)
+            ->assertSee('Open Me Board');
+    }
+
+    public function test_authenticated_user_can_open_own_project_from_show_route(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->for($user)->create(['name' => 'Detail Page Project']);
+
+        $this->actingAs($user)
+            ->get(route('projects.show', $project))
+            ->assertOk()
+            ->assertSee('Detail Page Project')
+            ->assertSee('Tasks');
+    }
+
     public function test_user_can_create_a_project(): void
     {
         $user = User::factory()->create();

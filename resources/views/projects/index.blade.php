@@ -33,11 +33,12 @@
         @else
             <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($projects as $project)
-                    <article class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:border-slate-300 hover:shadow-md">
-                        <h2 class="text-lg font-semibold text-slate-900">
-                            <a href="{{ route('projects.show', $project) }}" class="hover:text-indigo-600">
-                                {{ $project->name }}
-                            </a>
+                    <a
+                        href="{{ route('projects.show', $project) }}"
+                        class="group block cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:border-indigo-200 hover:bg-slate-50/80 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                    >
+                        <h2 class="text-lg font-semibold text-slate-900 transition group-hover:text-indigo-600">
+                            {{ $project->name }}
                         </h2>
                         @if ($project->description)
                             <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">
@@ -45,7 +46,7 @@
                             </p>
                         @endif
                         <p class="mt-4 text-xs text-slate-400">Updated {{ $project->updated_at->diffForHumans() }}</p>
-                    </article>
+                    </a>
                 @endforeach
             </div>
         @endif
