@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +35,13 @@ Route::middleware('auth')->group(function () {
     Route::resource('projects.tasks', TaskController::class)->scoped([
         'task' => 'project_id',
     ]);
+
+    Route::post('projects/{project}/tasks/{task}/comments', [CommentController::class, 'store'])
+        ->name('projects.tasks.comments.store')
+        ->scopeBindings();
+    Route::delete('projects/{project}/tasks/{task}/comments/{comment}', [CommentController::class, 'destroy'])
+        ->name('projects.tasks.comments.destroy')
+        ->scopeBindings();
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });

@@ -238,6 +238,21 @@ class TaskTest extends TestCase
             ->assertSee('To do');
     }
 
+    public function test_project_show_task_row_links_to_task_show_route(): void
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->for($user)->create();
+        $task = Task::factory()->for($project)->todo()->create(['title' => 'Whole row task']);
+
+        $taskShowUrl = route('projects.tasks.show', [$project, $task]);
+
+        $this->actingAs($user)
+            ->get(route('projects.show', $project))
+            ->assertOk()
+            ->assertSee($taskShowUrl, false)
+            ->assertSee('Whole row task', false);
+    }
+
     public function test_invalid_enum_values_are_rejected(): void
     {
         $user = User::factory()->create();

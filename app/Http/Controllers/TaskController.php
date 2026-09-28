@@ -39,6 +39,8 @@ class TaskController extends Controller
     {
         Gate::authorize('view', $task);
 
+        $task->load(['comments.user']);
+
         return view('tasks.show', compact('project', 'task'));
     }
 
