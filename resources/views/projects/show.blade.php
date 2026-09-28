@@ -132,6 +132,11 @@
             @endcan
         </div>
 
+        @php
+            use App\Enums\TaskPriority;
+            use App\Enums\TaskStatus;
+        @endphp
+
         <div class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -148,13 +153,95 @@
                 @endcan
             </div>
 
-            @if ($project->tasks->isEmpty())
+            <form method="GET" action="{{ route('projects.show', $project) }}" class="mt-6 rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="sm:col-span-2 lg:col-span-1">
+                        <x-input-label for="task_search" value="Search tasks" />
+                        <x-text-input
+                            id="task_search"
+                            name="search"
+                            type="search"
+                            class="mt-1 block w-full"
+                            :value="$taskSearch"
+                            placeholder="Title or description"
+                        />
+                    </div>
+                    <div>
+                        <x-input-label for="task_status" value="Status" />
+                        <select
+                            id="task_status"
+                            name="status"
+                            class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        >
+                            <option value="all" @selected($taskStatus === 'all' || $taskStatus === null)>All</option>
+                            @foreach (TaskStatus::cases() as $status)
+                                <option value="{{ $status->value }}" @selected($taskStatus === $status->value)>
+                                    {{ $status->label() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <x-input-label for="task_priority" value="Priority" />
+                        <select
+                            id="task_priority"
+                            name="priority"
+                            class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        >
+                            <option value="all" @selected($taskPriority === 'all' || $taskPriority === null)>All</option>
+                            @foreach (TaskPriority::cases() as $priority)
+                                <option value="{{ $priority->value }}" @selected($taskPriority === $priority->value)>
+                                    {{ $priority->label() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <x-input-label for="task_sort" value="Sort" />
+                        <select
+                            id="task_sort"
+                            name="sort"
+                            class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        >
+                            <option value="newest" @selected($taskSort === 'newest')>Newest</option>
+                            <option value="oldest" @selected($taskSort === 'oldest')>Oldest</option>
+                            <option value="due_asc" @selected($taskSort === 'due_asc')>Due date (soonest)</option>
+                            <option value="due_desc" @selected($taskSort === 'due_desc')>Due date (latest)</option>
+                            <option value="priority" @selected($taskSort === 'priority')>Priority</option>
+                            <option value="title_asc" @selected($taskSort === 'title_asc')>Title A–Z</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-1">
+                        <button
+                            type="submit"
+                            class="inline-flex flex-1 items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+                        >
+                            Apply
+                        </button>
+                        @if ($hasActiveTaskFilters)
+                            <a
+                                href="{{ route('projects.show', $project) }}"
+                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                            >
+                                Reset
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </form>
+
+            @if ($totalTasksCount === 0)
                 <p class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-8 text-center text-sm text-slate-600">
                     No tasks yet. Create the first task for this project.
                 </p>
+            @elseif ($tasks->isEmpty())
+                <p class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-8 text-center text-sm text-slate-600">
+                    No tasks match your current search or filters.
+                    <a href="{{ route('projects.show', $project) }}" class="font-medium text-indigo-600 hover:text-indigo-500">Reset filters</a>
+                </p>
             @else
                 <ul class="mt-6 divide-y divide-slate-100">
-                    @foreach ($project->tasks as $task)
+                    @foreach ($tasks as $task)
                         <li class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <a
@@ -174,6 +261,8 @@
                         </li>
                     @endforeach
                 </ul>
+
+                <x-listing-pagination :paginator="$tasks" />
             @endif
         </div>
     </div>

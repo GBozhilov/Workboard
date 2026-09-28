@@ -54,4 +54,33 @@ class Project extends Model
         });
     }
 
+    /**
+     * @param  Builder<Project>  $query
+     */
+    public function scopeSearch(Builder $query, ?string $search): void
+    {
+        if ($search === null || $search === '') {
+            return;
+        }
+
+        $term = '%'.addcslashes($search, '%_\\').'%';
+
+        $query->where(function (Builder $inner) use ($term): void {
+            $inner->where('name', 'like', $term)
+                ->orWhere('description', 'like', $term);
+        });
+    }
+
+    /**
+     * @param  Builder<Project>  $query
+     */
+    public function scopeSorted(Builder $query, string $sort): void
+    {
+        match ($sort) {
+            'oldest' => $query->orderBy('created_at'),
+            'name_asc' => $query->orderBy('name'),
+            'name_desc' => $query->orderByDesc('name'),
+            default => $query->orderByDesc('created_at'),
+        };
+    }
 }

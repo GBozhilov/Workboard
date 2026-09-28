@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ProjectRole;
+use App\Http\Requests\FilterProjectTasksRequest;
+use App\Http\Requests\IndexProjectRequest;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
@@ -12,14 +14,25 @@ use Illuminate\View\View;
 
 class ProjectController extends Controller
 {
-    public function index(): View
+    private const PROJECTS_PER_PAGE = 12;
+
+    private const TASKS_PER_PAGE = 10;
+
+    public function index(IndexProjectRequest $request): View
     {
         $projects = Project::query()
-            ->accessibleBy(auth()->user())
-            ->latest()
-            ->get();
+            ->accessibleBy($request->user())
+            ->search($request->searchTerm())
+            ->sorted($request->sort())
+            ->paginate(self::PROJECTS_PER_PAGE)
+            ->withQueryString();
 
-        return view('projects.index', compact('projects'));
+        return view('projects.index', [
+            'projects' => $projects,
+            'search' => $request->input('search', ''),
+            'sort' => $request->sort(),
+            'hasActiveFilters' => $request->hasActiveFilters(),
+        ]);
     }
 
     public function create(): View
@@ -42,16 +55,30 @@ class ProjectController extends Controller
             ->with('status', 'Project created successfully.');
     }
 
-    public function show(Project $project): View
+    public function show(FilterProjectTasksRequest $request, Project $project): View
     {
-        Gate::authorize('view', $project);
+        $project->load('members');
 
-        $project->load([
-            'tasks' => fn ($query) => $query->latest(),
-            'members',
+        $tasks = $project->tasks()
+            ->search($request->searchTerm())
+            ->filterStatus($request->statusFilter())
+            ->filterPriority($request->priorityFilter())
+            ->sorted($request->sort())
+            ->paginate(self::TASKS_PER_PAGE)
+            ->withQueryString();
+
+        $totalTasksCount = $project->tasks()->count();
+
+        return view('projects.show', [
+            'project' => $project,
+            'tasks' => $tasks,
+            'taskSearch' => $request->input('search', ''),
+            'taskStatus' => $request->input('status', FilterProjectTasksRequest::STATUS_ALL),
+            'taskPriority' => $request->input('priority', FilterProjectTasksRequest::PRIORITY_ALL),
+            'taskSort' => $request->sort(),
+            'hasActiveTaskFilters' => $request->hasActiveFilters(),
+            'totalTasksCount' => $totalTasksCount,
         ]);
-
-        return view('projects.show', compact('project'));
     }
 
     public function edit(Project $project): View
