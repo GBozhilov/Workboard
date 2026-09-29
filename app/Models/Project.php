@@ -17,6 +17,17 @@ class Project extends Model
     /** @use HasFactory<ProjectFactory> */
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Project $project): void {
+            TaskAttachment::query()
+                ->whereHas('task', fn (Builder $query) => $query->where('project_id', $project->id))
+                ->each(function (TaskAttachment $attachment): void {
+                    $attachment->delete();
+                });
+        });
+    }
+
     /**
      * @return BelongsTo<User, $this>
      */

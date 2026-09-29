@@ -7,6 +7,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskAttachmentController;
 use App\Http\Controllers\TaskTagController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +48,19 @@ Route::middleware('auth')->group(function () {
         ->scopeBindings();
     Route::delete('projects/{project}/tasks/{task}/tags/{tag}', [TaskTagController::class, 'destroy'])
         ->name('projects.tasks.tags.destroy')
+        ->scopeBindings();
+
+    Route::post('projects/{project}/tasks/{task}/attachments', [TaskAttachmentController::class, 'store'])
+        ->name('projects.tasks.attachments.store')
+        ->scopeBindings();
+    Route::get('projects/{project}/tasks/{task}/attachments/{attachment}/preview', [TaskAttachmentController::class, 'preview'])
+        ->name('projects.tasks.attachments.preview')
+        ->scopeBindings();
+    Route::get('projects/{project}/tasks/{task}/attachments/{attachment}/download', [TaskAttachmentController::class, 'download'])
+        ->name('projects.tasks.attachments.download')
+        ->scopeBindings();
+    Route::delete('projects/{project}/tasks/{task}/attachments/{attachment}', [TaskAttachmentController::class, 'destroy'])
+        ->name('projects.tasks.attachments.destroy')
         ->scopeBindings();
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');

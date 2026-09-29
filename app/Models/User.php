@@ -59,4 +59,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Comment::class);
     }
+
+    /**
+     * @return HasMany<TaskAttachment, $this>
+     */
+    public function taskAttachments(): HasMany
+    {
+        return $this->hasMany(TaskAttachment::class);
+    }
 }

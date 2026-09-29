@@ -53,12 +53,29 @@ class Task extends Model
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Task $task): void {
+            $task->attachments()->each(function (TaskAttachment $attachment): void {
+                $attachment->delete();
+            });
+        });
+    }
+
     /**
      * @return HasMany<Comment, $this>
      */
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class)->orderBy('created_at');
+    }
+
+    /**
+     * @return HasMany<TaskAttachment, $this>
+     */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(TaskAttachment::class)->orderByDesc('created_at');
     }
 
     /**

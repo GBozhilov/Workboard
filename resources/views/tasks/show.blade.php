@@ -5,6 +5,7 @@
 @section('content')
     @php
         use App\Models\Comment;
+        use App\Models\TaskAttachment;
     @endphp
     <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         <a href="{{ route('projects.show', $project) }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">&larr; Back to project</a>
@@ -180,6 +181,53 @@
                 </form>
             @endcan
         </section>
+
+        <section class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm sm:p-10" aria-label="Attachments">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Attachments</h2>
+
+            @can('create', [TaskAttachment::class, $task])
+                <form
+                    method="POST"
+                    action="{{ route('projects.tasks.attachments.store', [$project, $task]) }}"
+                    enctype="multipart/form-data"
+                    class="mt-6 border-b border-slate-100 pb-6"
+                >
+                    @csrf
+                    <label for="attachment-file" class="block text-sm font-medium text-slate-700">Attach a file</label>
+                    <p class="mt-1 text-sm text-slate-500">Images, PDF, text, or common Office documents up to 10 MB.</p>
+                    <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <input
+                            id="attachment-file"
+                            name="file"
+                            type="file"
+                            required
+                            class="block w-full text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+                        />
+                        <button
+                            type="submit"
+                            class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+                        >
+                            Upload
+                        </button>
+                    </div>
+                    @error('file')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </form>
+            @endcan
+
+            @if ($task->attachments->isEmpty())
+                <p class="mt-6 text-sm text-slate-500">No attachments yet.</p>
+            @else
+                <ul class="mt-6 space-y-4">
+                    @foreach ($task->attachments as $attachment)
+                        <x-task-attachment-row :project="$project" :task="$task" :attachment="$attachment" />
+                    @endforeach
+                </ul>
+            @endif
+        </section>
+
+        <x-attachment-image-modal />
 
         <section class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm sm:p-10" aria-label="Comments">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Comments</h2>
