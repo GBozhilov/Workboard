@@ -45,6 +45,17 @@
                         >
                             Projects
                         </a>
+                        <a
+                            href="{{ route('notifications.index') }}"
+                            class="relative rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                        >
+                            Notifications
+                            @if ($unreadNotificationsCount > 0)
+                                <span class="ml-1 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-indigo-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                                    {{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}
+                                </span>
+                            @endif
+                        </a>
                     @else
                         <span
                             class="cursor-default rounded-lg px-3 py-2 text-sm font-medium text-slate-400"

@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class CommentTest extends TestCase
@@ -373,6 +374,24 @@ class CommentTest extends TestCase
         $this->actingAs($owner)
             ->get(route('projects.tasks.show', [$project, $task]))
             ->assertSee('Comment Author', false);
+    }
+
+    public function test_task_page_displays_comment_created_timestamp(): void
+    {
+        ['owner' => $owner, 'project' => $project, 'task' => $task] = $this->ownedTaskSetup();
+        $createdAt = Carbon::parse('2026-09-29 22:41:00', config('app.timezone'));
+
+        Comment::factory()->for($task)->for($owner)->create([
+            'body' => 'Timed comment',
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
+        ]);
+
+        $expected = $createdAt->format('M j, Y').' · '.$createdAt->format('g:i A');
+
+        $this->actingAs($owner)
+            ->get(route('projects.tasks.show', [$project, $task]))
+            ->assertSee($expected, false);
     }
 
     public function test_task_page_displays_comment_body(): void

@@ -68,6 +68,20 @@ Tests use an in-memory SQLite database (see `phpunit.xml`) and do not require My
 docker compose exec php php artisan test
 ```
 
+## Queue worker (database driver)
+
+WorkBoard uses the **database** queue driver for queued listeners and notifications (`QUEUE_CONNECTION=database` in `.env.example`). The `jobs` table is created by Laravel’s default migrations.
+
+During local development, start a queue worker so background notifications are processed:
+
+```bash
+docker compose exec php php artisan queue:work
+```
+
+Keep this process running in a separate terminal while you exercise task, comment, member, and attachment flows. Primary actions (create task, comment, etc.) complete immediately; notification delivery runs asynchronously via the queue.
+
+Redis is available in Docker Compose for a later stage and is **not** required for the database queue.
+
 ## Project structure (high level)
 
 - `app/` — HTTP layer, models, policies, form requests

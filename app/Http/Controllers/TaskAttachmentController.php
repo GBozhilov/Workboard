@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\AttachmentUploaded;
 use App\Http\Requests\StoreTaskAttachmentRequest;
 use App\Models\Project;
 use App\Models\Task;
@@ -30,13 +31,15 @@ class TaskAttachmentController extends Controller
         }
 
         try {
-            $task->attachments()->create([
+            $attachment = $task->attachments()->create([
                 'user_id' => $request->user()->id,
                 'original_name' => basename($uploaded->getClientOriginalName()),
                 'path' => $path,
                 'mime_type' => (string) ($uploaded->getMimeType() ?? 'application/octet-stream'),
                 'size' => (int) $uploaded->getSize(),
             ]);
+
+            AttachmentUploaded::dispatch($attachment, $request->user());
         } catch (\Throwable $exception) {
             Storage::disk(TaskAttachment::STORAGE_DISK)->delete($path);
 

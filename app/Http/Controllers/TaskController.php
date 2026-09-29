@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TaskCreated;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Project;
@@ -29,6 +30,8 @@ class TaskController extends Controller
     public function store(StoreTaskRequest $request, Project $project): RedirectResponse
     {
         $task = $project->tasks()->create($request->validated());
+
+        TaskCreated::dispatch($task, $request->user());
 
         return redirect()
             ->route('projects.tasks.show', [$project, $task])

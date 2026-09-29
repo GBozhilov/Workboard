@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProjectMemberAdded;
 use App\Http\Requests\StoreProjectMemberRequest;
 use App\Models\Project;
 use App\Models\User;
@@ -17,6 +18,8 @@ class ProjectMemberController extends Controller
         $project->members()->attach($member->id, [
             'role' => $request->memberRole()->value,
         ]);
+
+        ProjectMemberAdded::dispatch($project, $member, $request->user());
 
         return redirect()
             ->route('projects.show', $project)

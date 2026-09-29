@@ -182,7 +182,7 @@
             @endcan
         </section>
 
-        <section class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm sm:p-10" aria-label="Attachments">
+        <section id="attachments" class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm sm:p-10" aria-label="Attachments">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Attachments</h2>
 
             @can('create', [TaskAttachment::class, $task])
@@ -229,7 +229,7 @@
 
         <x-attachment-image-modal />
 
-        <section class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm sm:p-10" aria-label="Comments">
+        <section id="comments" class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm sm:p-10" aria-label="Comments">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Comments</h2>
 
             @can('create', [Comment::class, $task])
@@ -264,6 +264,12 @@
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                 <div class="min-w-0 flex-1">
                                     <p class="text-sm font-semibold text-slate-900">{{ $comment->user->name }}</p>
+                                    <p
+                                        class="mt-0.5 text-xs text-slate-500"
+                                        title="{{ $comment->created_at->format('M j, Y g:i:s A') }}"
+                                    >
+                                        {{ $comment->created_at->format('M j, Y') }} · {{ $comment->created_at->format('g:i A') }}
+                                    </p>
                                     <p class="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{{ $comment->body }}</p>
                                 </div>
                                 @can('delete', $comment)

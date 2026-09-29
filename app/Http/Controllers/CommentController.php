@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CommentCreated;
 use App\Http\Requests\StoreCommentRequest;
 use App\Models\Comment;
 use App\Models\Project;
@@ -13,10 +14,12 @@ class CommentController extends Controller
 {
     public function store(StoreCommentRequest $request, Project $project, Task $task): RedirectResponse
     {
-        $task->comments()->create([
+        $comment = $task->comments()->create([
             ...$request->validated(),
             'user_id' => $request->user()->id,
         ]);
+
+        CommentCreated::dispatch($comment, $request->user());
 
         return redirect()
             ->route('projects.tasks.show', [$project, $task])
