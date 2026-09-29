@@ -3,6 +3,9 @@
 @section('title', $task->title.' — '.$project->name)
 
 @section('content')
+    @php
+        use App\Models\Comment;
+    @endphp
     <div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         <a href="{{ route('projects.show', $project) }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">&larr; Back to project</a>
 
@@ -69,10 +72,119 @@
             @endif
         </div>
 
+        <section class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm sm:p-10" aria-label="Tags">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Tags</h2>
+
+            @if ($task->tags->isNotEmpty())
+                <ul class="mt-4 flex flex-wrap gap-2">
+                    @foreach ($task->tags as $tag)
+                        <li class="inline-flex items-center gap-1">
+                            <x-task-tag-badge :tag="$tag" />
+                            @can('update', $task)
+                                <form
+                                    method="POST"
+                                    action="{{ route('projects.tasks.tags.destroy', [$project, $task, $tag]) }}"
+                                    class="inline"
+                                    data-confirm="true"
+                                    data-confirm-title="Remove tag"
+                                    data-confirm-message="Remove this tag from the task?"
+                                    data-confirm-label="Remove tag"
+                                    data-confirm-destructive
+                                >
+                                    @csrf
+                                    @method('DELETE')
+                                    <button
+                                        type="submit"
+                                        class="rounded p-0.5 text-slate-400 transition hover:text-red-600"
+                                        aria-label="Remove tag {{ $tag->name }}"
+                                    >
+                                        &times;
+                                    </button>
+                                </form>
+                            @endcan
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <p class="mt-4 text-sm text-slate-500">No tags yet.</p>
+            @endif
+
+            @can('update', $task)
+                <form method="POST" action="{{ route('projects.tasks.tags.store', [$project, $task]) }}" class="mt-6 border-t border-slate-100 pt-6">
+                    @csrf
+                    <label for="tag-name" class="block text-sm font-medium text-slate-700">Add new tag</label>
+                    <p class="mt-1 text-sm text-slate-500">Create a new project tag or type a name already used in this project to reuse it.</p>
+                    <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <div class="flex-1">
+                            <input
+                                id="tag-name"
+                                name="name"
+                                type="text"
+                                list="project-tag-suggestions"
+                                maxlength="50"
+                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                value="{{ old('name') }}"
+                                placeholder="e.g. urgent"
+                            />
+                            <datalist id="project-tag-suggestions">
+                                @foreach ($projectTags as $suggestedTag)
+                                    <option value="{{ $suggestedTag->name }}"></option>
+                                @endforeach
+                            </datalist>
+                            @error('name')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <button
+                            type="submit"
+                            class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+                        >
+                            Add new tag
+                        </button>
+                    </div>
+                </form>
+
+                <form method="POST" action="{{ route('projects.tasks.tags.store', [$project, $task]) }}" class="mt-4">
+                    @csrf
+                    <label for="tag-id" class="block text-sm font-medium text-slate-700">Attach existing tag</label>
+                    <p class="mt-1 text-sm text-slate-500">Project tags not yet on this task.</p>
+                    <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <select
+                            id="tag-id"
+                            name="tag_id"
+                            class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs disabled:bg-slate-100 disabled:text-slate-500"
+                            @disabled($availableTags->isEmpty())
+                        >
+                            @if ($availableTags->isEmpty())
+                                <option value="">No tags available to attach</option>
+                            @else
+                                <option value="">Select a tag…</option>
+                                @foreach ($availableTags as $availableTag)
+                                    <option value="{{ $availableTag->id }}" @selected(old('tag_id') == $availableTag->id)>
+                                        {{ $availableTag->name }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <button
+                            type="submit"
+                            class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            @disabled($availableTags->isEmpty())
+                        >
+                            Attach
+                        </button>
+                    </div>
+                    @error('tag_id')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </form>
+            @endcan
+        </section>
+
         <section class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm sm:p-10" aria-label="Comments">
             <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Comments</h2>
 
-            @can('create', [\App\Models\Comment::class, $task])
+            @can('create', [Comment::class, $task])
                 <form method="POST" action="{{ route('projects.tasks.comments.store', [$project, $task]) }}" class="mt-6">
                     @csrf
                     <label for="comment-body" class="block text-sm font-medium text-slate-700">Add a comment</label>

@@ -39,9 +39,15 @@ class TaskController extends Controller
     {
         Gate::authorize('view', $task);
 
-        $task->load(['comments.user']);
+        $task->load(['comments.user', 'tags']);
 
-        return view('tasks.show', compact('project', 'task'));
+        $projectTags = $project->tags()->get();
+
+        $availableTags = $project->tags()
+            ->whereNotIn('tags.id', $task->tags()->select('tags.id'))
+            ->get();
+
+        return view('tasks.show', compact('project', 'task', 'projectTags', 'availableTags'));
     }
 
     public function edit(Project $project, Task $task): View

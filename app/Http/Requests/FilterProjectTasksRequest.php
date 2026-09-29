@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Models\Project;
+use App\Models\Tag;
 use Illuminate\Foundation\Http\FormRequest;
 
 class FilterProjectTasksRequest extends FormRequest
@@ -24,6 +25,8 @@ class FilterProjectTasksRequest extends FormRequest
     public const STATUS_ALL = 'all';
 
     public const PRIORITY_ALL = 'all';
+
+    public const TAG_ALL = 'all';
 
     /**
      * @return list<string>
@@ -58,13 +61,14 @@ class FilterProjectTasksRequest extends FormRequest
             'status' => ['nullable', 'string', 'max:32'],
             'priority' => ['nullable', 'string', 'max:32'],
             'sort' => ['nullable', 'string', 'max:32'],
+            'tag' => ['nullable', 'string', 'max:64'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
     protected function prepareForValidation(): void
     {
-        foreach (['search', 'status', 'priority', 'sort'] as $key) {
+        foreach (['search', 'status', 'priority', 'sort', 'tag'] as $key) {
             if ($this->has($key) && $this->input($key) === '') {
                 $this->merge([$key => null]);
             }
@@ -100,6 +104,39 @@ class FilterProjectTasksRequest extends FormRequest
         return TaskPriority::tryFrom($priority)?->value;
     }
 
+    public function tagFilter(): ?int
+    {
+        $tag = $this->input('tag', self::TAG_ALL);
+
+        if ($tag === self::TAG_ALL || $tag === null || $tag === '') {
+            return null;
+        }
+
+        $project = $this->route('project');
+
+        if (! $project instanceof Project) {
+            return null;
+        }
+
+        $tagId = Tag::query()
+            ->where('project_id', $project->id)
+            ->where('slug', $tag)
+            ->value('id');
+
+        return $tagId !== null ? (int) $tagId : null;
+    }
+
+    public function tagSlug(): ?string
+    {
+        $tag = $this->input('tag', self::TAG_ALL);
+
+        if ($tag === self::TAG_ALL || $tag === null || $tag === '') {
+            return null;
+        }
+
+        return is_string($tag) ? $tag : null;
+    }
+
     public function sort(): string
     {
         $sort = $this->input('sort');
@@ -111,9 +148,13 @@ class FilterProjectTasksRequest extends FormRequest
 
     public function hasActiveFilters(): bool
     {
+        $tagSlug = $this->tagSlug();
+
         return $this->searchTerm() !== null
             || $this->statusFilter() !== null
             || $this->priorityFilter() !== null
+            || $this->tagFilter() !== null
+            || ($tagSlug !== null && $tagSlug !== self::TAG_ALL)
             || ($this->input('sort') !== null && $this->sort() !== self::SORT_NEWEST);
     }
 }

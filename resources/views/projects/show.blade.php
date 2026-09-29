@@ -135,6 +135,7 @@
         @php
             use App\Enums\TaskPriority;
             use App\Enums\TaskStatus;
+            use App\Models\Task;
         @endphp
 
         <div class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm">
@@ -143,7 +144,7 @@
                     <h2 class="text-lg font-semibold text-slate-900">Tasks</h2>
                     <p class="mt-1 text-sm text-slate-500">Work items for this project.</p>
                 </div>
-                @can('create', [\App\Models\Task::class, $project])
+                @can('create', [Task::class, $project])
                     <a
                         href="{{ route('projects.tasks.create', $project) }}"
                         class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
@@ -196,6 +197,21 @@
                             @endforeach
                         </select>
                     </div>
+                    <div>
+                        <x-input-label for="task_tag" value="Tag" />
+                        <select
+                            id="task_tag"
+                            name="tag"
+                            class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        >
+                            <option value="all" @selected($taskTag === 'all' || $taskTag === null)>All</option>
+                            @foreach ($projectTags as $filterTag)
+                                <option value="{{ $filterTag->slug }}" @selected($taskTag === $filterTag->slug)>
+                                    {{ $filterTag->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="sm:col-span-2">
                         <x-input-label for="task_sort" value="Sort" />
                         <select
@@ -241,28 +257,8 @@
                 </p>
             @else
                 <ul class="mt-6 divide-y divide-slate-100">
-                    @foreach ($tasks as $task)
-                        <li>
-                            <a
-                                href="{{ route('projects.tasks.show', [$project, $task]) }}"
-                                class="group flex cursor-pointer flex-col gap-3 rounded-lg py-4 transition hover:bg-slate-50/80 sm:flex-row sm:items-center sm:justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-                            >
-                                <div class="min-w-0">
-                                    <span class="font-medium text-slate-900 transition group-hover:text-indigo-600">
-                                        {{ $task->title }}
-                                    </span>
-                                    <p class="mt-1 min-h-4 text-xs leading-4 text-slate-500">
-                                        @if ($task->due_date)
-                                            Due {{ $task->due_date->format('M j, Y') }}
-                                        @endif
-                                    </p>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <x-task-status-badge :status="$task->status" />
-                                    <x-task-priority-badge :priority="$task->priority" />
-                                </div>
-                            </a>
-                        </li>
+                    @foreach ($tasks as $listTask)
+                        <x-project-task-list-item :project="$project" :list-task="$listTask" />
                     @endforeach
                 </ul>
 

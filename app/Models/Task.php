@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
@@ -61,6 +62,14 @@ class Task extends Model
     }
 
     /**
+     * @return BelongsToMany<Tag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class)->orderBy('name');
+    }
+
+    /**
      * @param  Builder<Task>  $query
      */
     public function scopeSearch(Builder $query, ?string $search): void
@@ -99,6 +108,18 @@ class Task extends Model
         }
 
         $query->where('priority', $priority);
+    }
+
+    /**
+     * @param  Builder<Task>  $query
+     */
+    public function scopeFilterTag(Builder $query, ?int $tagId): void
+    {
+        if ($tagId === null) {
+            return;
+        }
+
+        $query->whereHas('tags', fn (Builder $tags) => $tags->whereKey($tagId));
     }
 
     /**

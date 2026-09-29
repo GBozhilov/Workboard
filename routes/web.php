@@ -7,6 +7,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskTagController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -31,16 +32,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])
         ->name('projects.members.destroy');
 
-    // Scoped binding: nested {task} must belong to the parent {project}.
-    Route::resource('projects.tasks', TaskController::class)->scoped([
-        'task' => 'project_id',
-    ]);
+    // Scoped binding: resolve {task} via $project->tasks() (task id in URL, must belong to project).
+    Route::resource('projects.tasks', TaskController::class)->scoped();
 
     Route::post('projects/{project}/tasks/{task}/comments', [CommentController::class, 'store'])
         ->name('projects.tasks.comments.store')
         ->scopeBindings();
     Route::delete('projects/{project}/tasks/{task}/comments/{comment}', [CommentController::class, 'destroy'])
         ->name('projects.tasks.comments.destroy')
+        ->scopeBindings();
+
+    Route::post('projects/{project}/tasks/{task}/tags', [TaskTagController::class, 'store'])
+        ->name('projects.tasks.tags.store')
+        ->scopeBindings();
+    Route::delete('projects/{project}/tasks/{task}/tags/{tag}', [TaskTagController::class, 'destroy'])
+        ->name('projects.tasks.tags.destroy')
         ->scopeBindings();
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');

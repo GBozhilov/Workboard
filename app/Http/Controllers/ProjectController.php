@@ -60,21 +60,27 @@ class ProjectController extends Controller
         $project->load('members');
 
         $tasks = $project->tasks()
+            ->with('tags')
             ->search($request->searchTerm())
             ->filterStatus($request->statusFilter())
             ->filterPriority($request->priorityFilter())
+            ->filterTag($request->tagFilter())
             ->sorted($request->sort())
             ->paginate(self::TASKS_PER_PAGE)
             ->withQueryString();
 
         $totalTasksCount = $project->tasks()->count();
 
+        $projectTags = $project->tags()->get();
+
         return view('projects.show', [
             'project' => $project,
             'tasks' => $tasks,
+            'projectTags' => $projectTags,
             'taskSearch' => $request->input('search', ''),
             'taskStatus' => $request->input('status', FilterProjectTasksRequest::STATUS_ALL),
             'taskPriority' => $request->input('priority', FilterProjectTasksRequest::PRIORITY_ALL),
+            'taskTag' => $request->input('tag', FilterProjectTasksRequest::TAG_ALL),
             'taskSort' => $request->sort(),
             'hasActiveTaskFilters' => $request->hasActiveFilters(),
             'totalTasksCount' => $totalTasksCount,
