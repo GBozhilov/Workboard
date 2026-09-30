@@ -27,3 +27,5 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+postman/*.local.postman_environment.json
