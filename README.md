@@ -116,6 +116,61 @@ Failed jobs are stored in the `failed_jobs` table per Laravel’s default config
 
 The project show page caches derived statistics (task counts by status, member count) in Redis with explicit invalidation when tasks or members change. PHPUnit uses the **array** cache driver and does not require a running Redis instance.
 
+## REST API (Sanctum)
+
+WorkBoard exposes a JSON API under `/api` using **Laravel Sanctum** personal access tokens. Session-based web login is unchanged.
+
+### Obtain a token
+
+```bash
+curl -s -X POST http://localhost:8081/api/login \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"your-password"}'
+```
+
+Use the `token` value from the response:
+
+```bash
+export TOKEN="your-token-here"
+curl -s http://localhost:8081/api/user \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Representative endpoints
+
+| Method | Path |
+|--------|------|
+| `GET` | `/api/user` |
+| `POST` | `/api/logout` |
+| `GET` | `/api/projects` |
+| `POST` | `/api/projects` |
+| `GET` | `/api/projects/{project}` |
+| `GET` | `/api/projects/{project}/tasks` |
+| `POST` | `/api/projects/{project}/tasks` |
+| `GET` | `/api/projects/{project}/tasks/{task}/comments` |
+| `POST` | `/api/projects/{project}/tasks/{task}/comments` |
+| `GET` | `/api/projects/{project}/tags` |
+| `POST` | `/api/projects/{project}/tasks/{task}/tags` |
+| `POST` | `/api/projects/{project}/tasks/{task}/tags/{tag}/attach` |
+
+Task list query parameters mirror the web project task filters: `search`, `status`, `priority`, `tag`, `sort`, `page`, `per_page` (max 100).
+
+Revoke the current token:
+
+```bash
+curl -s -X POST http://localhost:8081/api/logout \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Run migrations after pulling API changes (Sanctum `personal_access_tokens` table):
+
+```bash
+docker compose exec php php artisan migrate
+```
+
 ## Project structure (high level)
 
 - `app/` — HTTP layer, models, policies, form requests

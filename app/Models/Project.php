@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProjectRole;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -101,5 +102,16 @@ class Project extends Model
             'name_desc' => $query->orderByDesc('name'),
             default => $query->orderByDesc('created_at'),
         };
+    }
+
+    public function membershipRoleFor(User $user): ?string
+    {
+        if ($this->user_id === $user->id) {
+            return ProjectRole::Owner->value;
+        }
+
+        $role = $this->members()->whereKey($user->id)->value('role');
+
+        return is_string($role) ? $role : null;
     }
 }
