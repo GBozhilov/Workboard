@@ -19,12 +19,33 @@ class TagFactory extends Factory
      */
     public function definition(): array
     {
-        $name = fake()->unique()->word();
+        $name = fake()->randomElement([
+            'backend',
+            'frontend',
+            'bug',
+            'feature',
+            'urgent',
+            'api',
+            'database',
+            'testing',
+            'documentation',
+            'performance',
+            'security',
+            'devops',
+        ]);
 
         return [
             'project_id' => Project::factory(),
             'name' => $name,
             'slug' => Str::slug($name),
         ];
+    }
+
+    public function named(string $name): static
+    {
+        return $this->state(fn () => [
+            'name' => $name,
+            'slug' => Str::slug($name),
+        ]);
     }
 }

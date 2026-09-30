@@ -21,8 +21,14 @@ class ProjectFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'name' => fake()->sentence(3),
-            'description' => fake()->optional()->paragraph(),
+            'name' => fake()->randomElement([
+                'Platform Reliability',
+                'Customer Experience',
+                'Internal Tools',
+                'Integration Hub',
+                'Release Readiness',
+            ]),
+            'description' => fake()->optional(0.9)->paragraph(),
         ];
     }
 

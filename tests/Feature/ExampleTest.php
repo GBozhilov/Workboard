@@ -17,7 +17,6 @@ class ExampleTest extends TestCase
         $response->assertOk();
         $response->assertSee('WorkBoard');
         $response->assertSee('Projects');
-        $response->assertSee('Tasks');
-        $response->assertSee('Team');
+        $response->assertSee('Log in', false);
     }
 }

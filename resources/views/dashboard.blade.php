@@ -10,7 +10,7 @@
                 Hello, {{ auth()->user()->name }}
             </h1>
             <p class="mt-4 max-w-2xl text-base leading-relaxed text-slate-600">
-                You are signed in to WorkBoard. Manage your projects or continue building out the app in upcoming stages.
+                You are signed in to WorkBoard. Open your projects to manage tasks, members, tags, and notifications.
             </p>
             <div class="mt-8">
                 <a

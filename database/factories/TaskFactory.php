@@ -6,6 +6,7 @@ use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,12 +24,22 @@ class TaskFactory extends Factory
         return [
             'project_id' => Project::factory(),
             'assigned_to' => null,
-            'title' => fake()->sentence(4),
-            'description' => fake()->optional()->paragraph(),
-            'status' => TaskStatus::Todo,
-            'priority' => TaskPriority::Medium,
-            'due_date' => fake()->optional()->dateTimeBetween('now', '+1 month')?->format('Y-m-d'),
+            'title' => ucfirst(fake()->words(random_int(3, 6), true)),
+            'description' => fake()->optional(0.8)->paragraph(),
+            'status' => fake()->randomElement(TaskStatus::cases()),
+            'priority' => fake()->randomElement(TaskPriority::cases()),
+            'due_date' => fake()->optional(0.7)->dateTimeBetween('-2 weeks', '+2 months')?->format('Y-m-d'),
         ];
+    }
+
+    public function assignedTo(User $user): static
+    {
+        return $this->state(fn () => ['assigned_to' => $user->id]);
+    }
+
+    public function unassigned(): static
+    {
+        return $this->state(fn () => ['assigned_to' => null]);
     }
 
     public function todo(): static

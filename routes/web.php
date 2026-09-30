@@ -10,11 +10,10 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskAttachmentController;
 use App\Http\Controllers\TaskTagController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', WelcomeController::class)->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
