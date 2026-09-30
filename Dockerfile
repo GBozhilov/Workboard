@@ -5,10 +5,13 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     libicu-dev \
+    $PHPIZE_DEPS \
     && docker-php-ext-install \
         pdo_mysql \
         intl \
         zip \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www

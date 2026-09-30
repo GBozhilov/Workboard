@@ -6,6 +6,7 @@ use App\Events\ProjectMemberAdded;
 use App\Http\Requests\StoreProjectMemberRequest;
 use App\Models\Project;
 use App\Models\User;
+use App\Support\ProjectSummaryCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 
@@ -20,6 +21,8 @@ class ProjectMemberController extends Controller
         ]);
 
         ProjectMemberAdded::dispatch($project, $member, $request->user());
+
+        ProjectSummaryCache::forget($project);
 
         return redirect()
             ->route('projects.show', $project)
@@ -41,6 +44,8 @@ class ProjectMemberController extends Controller
         }
 
         $project->members()->detach($member->id);
+
+        ProjectSummaryCache::forget($project);
 
         return redirect()
             ->route('projects.show', $project)

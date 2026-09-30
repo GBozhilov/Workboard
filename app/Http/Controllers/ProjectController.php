@@ -8,6 +8,7 @@ use App\Http\Requests\IndexProjectRequest;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
+use App\Support\ProjectSummaryCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -69,12 +70,13 @@ class ProjectController extends Controller
             ->paginate(self::TASKS_PER_PAGE)
             ->withQueryString();
 
-        $totalTasksCount = $project->tasks()->count();
+        $projectSummary = app(ProjectSummaryCache::class)->get($project);
 
         $projectTags = $project->tags()->get();
 
         return view('projects.show', [
             'project' => $project,
+            'projectSummary' => $projectSummary,
             'tasks' => $tasks,
             'projectTags' => $projectTags,
             'taskSearch' => $request->input('search', ''),
@@ -83,7 +85,7 @@ class ProjectController extends Controller
             'taskTag' => $request->input('tag', FilterProjectTasksRequest::TAG_ALL),
             'taskSort' => $request->sort(),
             'hasActiveTaskFilters' => $request->hasActiveFilters(),
-            'totalTasksCount' => $totalTasksCount,
+            'totalTasksCount' => $projectSummary['total_tasks'],
         ]);
     }
 

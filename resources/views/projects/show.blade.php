@@ -58,6 +58,33 @@
             @endif
         </div>
 
+        <div class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm sm:p-10">
+            <h2 class="text-lg font-semibold text-slate-900">Project summary</h2>
+            <p class="mt-1 text-sm text-slate-500">Task and member counts for this project.</p>
+            <dl class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                <div class="rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3">
+                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Total tasks</dt>
+                    <dd class="mt-1 text-2xl font-semibold text-slate-900">{{ $projectSummary['total_tasks'] }}</dd>
+                </div>
+                <div class="rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3">
+                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">To do</dt>
+                    <dd class="mt-1 text-2xl font-semibold text-slate-900">{{ $projectSummary['tasks_todo'] }}</dd>
+                </div>
+                <div class="rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3">
+                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">In progress</dt>
+                    <dd class="mt-1 text-2xl font-semibold text-slate-900">{{ $projectSummary['tasks_in_progress'] }}</dd>
+                </div>
+                <div class="rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3">
+                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Done</dt>
+                    <dd class="mt-1 text-2xl font-semibold text-slate-900">{{ $projectSummary['tasks_done'] }}</dd>
+                </div>
+                <div class="rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3">
+                    <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Members</dt>
+                    <dd class="mt-1 text-2xl font-semibold text-slate-900">{{ $projectSummary['member_count'] }}</dd>
+                </div>
+            </dl>
+        </div>
+
         <div class="mt-8 rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>

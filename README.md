@@ -68,19 +68,53 @@ Tests use an in-memory SQLite database (see `phpunit.xml`) and do not require My
 docker compose exec php php artisan test
 ```
 
-## Queue worker (database driver)
+## Redis (queues and cache)
 
-WorkBoard uses the **database** queue driver for queued listeners and notifications (`QUEUE_CONNECTION=database` in `.env.example`). The `jobs` table is created by Laravel’s default migrations.
+WorkBoard uses the **Redis** service from Docker Compose for queues and application cache (`QUEUE_CONNECTION=redis`, `CACHE_STORE=redis` in `.env.example`).
 
-During local development, start a queue worker so background notifications are processed:
+Inside Docker, PHP connects to Redis at **`redis:6379`** (the Compose service hostname). Port **6380** on your host maps to Redis only for tools outside the PHP container (for example `redis-cli` from the host).
+
+The PHP image includes the **phpredis** extension (`REDIS_CLIENT=phpredis`). After changing the `Dockerfile`, rebuild:
 
 ```bash
-docker compose exec php php artisan queue:work
+docker compose build php && docker compose up -d
 ```
 
-Keep this process running in a separate terminal while you exercise task, comment, member, and attachment flows. Primary actions (create task, comment, etc.) complete immediately; notification delivery runs asynchronously via the queue.
+Start Redis (if not already running):
 
-Redis is available in Docker Compose for a later stage and is **not** required for the database queue.
+```bash
+docker compose up -d redis
+```
+
+Verify connectivity (from the PHP container):
+
+```bash
+docker compose exec php php artisan tinker --execute="dump(Illuminate\Support\Facades\Redis::connection()->ping());"
+```
+
+You should see `"PONG"`.
+
+Inspect Redis from the Redis container:
+
+```bash
+docker compose exec redis redis-cli PING
+```
+
+### Queue worker
+
+Queued listeners and notifications (Stage 11) are processed from the **Redis** queue. Start a worker during local development:
+
+```bash
+docker compose exec php php artisan queue:work -v
+```
+
+Keep this process running in a separate terminal while you exercise task, comment, member, and attachment flows. Primary actions complete immediately; notification delivery runs asynchronously.
+
+Failed jobs are stored in the `failed_jobs` table per Laravel’s default configuration.
+
+### Project summary cache
+
+The project show page caches derived statistics (task counts by status, member count) in Redis with explicit invalidation when tasks or members change. PHPUnit uses the **array** cache driver and does not require a running Redis instance.
 
 ## Project structure (high level)
 
