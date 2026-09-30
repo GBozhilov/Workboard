@@ -42,7 +42,7 @@ class TaskController extends Controller
     {
         Gate::authorize('view', $task);
 
-        $task->load(['comments.user', 'tags', 'attachments.user']);
+        $task->load(['comments.user', 'tags', 'attachments.user', 'assignee']);
 
         $projectTags = $project->tags()->get();
 

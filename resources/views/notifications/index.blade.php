@@ -12,12 +12,9 @@
             @if (auth()->user()->unreadNotifications()->exists())
                 <form method="POST" action="{{ route('notifications.read-all') }}">
                     @csrf
-                    <button
-                        type="submit"
-                        class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                    >
+                    <x-secondary-button type="submit">
                         Mark all as read
-                    </button>
+                    </x-secondary-button>
                 </form>
             @endif
         </div>
@@ -25,9 +22,10 @@
         <x-auth-session-status class="mt-6" :status="session('status')" />
 
         @if ($notifications->isEmpty())
-            <p class="mt-10 rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-10 text-center text-sm text-slate-600">
-                No notifications yet.
-            </p>
+            <div class="mt-10 rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-10 text-center">
+                <p class="text-sm font-medium text-slate-900">No notifications yet</p>
+                <p class="mt-2 text-sm text-slate-600">When tasks, comments, or project updates affect you, they will appear here.</p>
+            </div>
         @else
             <ul class="mt-8 divide-y divide-slate-100 rounded-2xl border border-slate-200/80 bg-white shadow-sm">
                 @foreach ($notifications as $notification)

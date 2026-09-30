@@ -1,27 +1,39 @@
 # WorkBoard
 
-WorkBoard is a learning project: a project-management and task-tracking web application built with Laravel. It is developed in stages to practice authentication, Eloquent, policies, APIs, queues, testing, and related Laravel topics.
+WorkBoard is a project-management web application built with **Laravel** and **Blade**. It supports collaborative projects, tasks, comments, tags, file attachments, in-app notifications (with queued delivery), Redis-backed caching, and a JSON **REST API** authenticated with **Laravel Sanctum**.
 
-**Status:** Active development. Stages completed so far include the WorkBoard foundation (UI/layout), user authentication, and authenticated **Projects** CRUD with per-user ownership.
+## Features
+
+- **Authentication** — register, log in, log out (session-based web UI)
+- **Projects** — CRUD, search, sort, pagination; owned and shared via membership
+- **Members** — project owners can add/remove members; roles (owner / member) and policies enforce access
+- **Tasks** — project-scoped CRUD, assignees, status, priority, due dates, search/filters/sort/pagination on the project page
+- **Comments** — on tasks, with author and timestamps
+- **Tags** — project-scoped; attach to tasks
+- **Attachments** — upload, download, image preview, delete (stored on the `local` disk)
+- **Notifications** — database notifications for task/comment/member/attachment events; queued listeners; safe “open” navigation with stale-item handling
+- **Cache** — Redis project summary statistics on project show, with explicit invalidation
+- **REST API** — `/api` routes mirroring core resources; Bearer token via Sanctum
+- **Demo dataset** — optional rich local seed (two configurable login users plus sample team data); see [Demo seeding](#demo-seeding) below
 
 ## Tech stack
 
 - PHP 8.3+ / Laravel 13
 - MySQL (Docker Compose)
-- Redis (available in Docker; used in later stages)
+- Redis — queues and cache (`QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`)
 - Blade, Tailwind CSS, Vite
 - PHPUnit
 
 ## Requirements
 
-- [Docker](https://docs.docker.com/get-docker/) and Docker Compose (recommended for this repo)
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose (recommended)
 - Or: PHP 8.3+, Composer, Node.js/npm, and MySQL locally
 
 ## Local setup (Docker)
 
 1. Clone the repository and enter the project directory.
 
-2. Copy the environment file and generate an application key:
+2. Copy the environment file and install dependencies:
 
    ```bash
    cp .env.example .env
@@ -29,40 +41,57 @@ WorkBoard is a learning project: a project-management and task-tracking web appl
    docker compose exec php php artisan key:generate
    ```
 
-3. Start services (PHP-FPM, Nginx, MySQL, Redis):
+3. Configure demo login users in `.env` (see [Demo seeding](#demo-seeding)) if you plan to seed sample data.
+
+4. Start services:
 
    ```bash
    docker compose up -d
    ```
 
-   The PHP entrypoint creates Laravel cache/log directories and maps the container `www-data` user to the same numeric UID/GID as the bind-mounted project (auto-detected from `/var/www`, or set `APP_USER_ID` / `APP_GROUP_ID` in `.env`). That lets PHP-FPM write under `storage/` and `bootstrap/cache/` without changing ownership of your WSL files. Prefer `docker compose exec -u www-data php php artisan …` over running Artisan as root. After changing `Dockerfile` or `docker/php/entrypoint.sh`, rebuild with `docker compose build php && docker compose up -d php`.
+   The PHP entrypoint aligns container permissions with your bind mount. Prefer `docker compose exec -u www-data php php artisan …` over running Artisan as root.
 
-4. Run migrations:
+5. Run migrations:
 
    ```bash
    docker compose exec php php artisan migrate
    ```
 
-5. Install frontend dependencies and build assets (or run the dev server):
+6. Build frontend assets:
 
    ```bash
    npm install
    npm run build
    ```
 
-   For development with hot reload:
+   For development with hot reload: `npm run dev`
 
-   ```bash
-   npm run dev
-   ```
+7. Open [http://localhost:8081](http://localhost:8081).
 
-6. Open the app at [http://localhost:8081](http://localhost:8081).
+Default Docker MySQL credentials in `.env.example` (`laravel` / `laravel`) are for **local development only**.
 
-Default Docker MySQL credentials match `.env.example` (`laravel` / `laravel`). These are **local development placeholders only**—do not use them in production.
+## Demo seeding
+
+Local demo accounts and a rich sample dataset are configured via environment variables (never commit real passwords to Git):
+
+```env
+DEMO_USER_ONE_EMAIL=
+DEMO_USER_ONE_PASSWORD=
+DEMO_USER_TWO_EMAIL=
+DEMO_USER_TWO_PASSWORD=
+```
+
+Values are read through `config/demo.php`. To reset the database and load the demo dataset (destructive):
+
+```bash
+docker compose exec -T php php artisan migrate:fresh --seed
+```
+
+Additional seeded team users (`@workboard.demo`) appear as project members but are not login accounts unless you create credentials separately.
 
 ## Running tests
 
-Tests use an in-memory SQLite database (see `phpunit.xml`) and do not require MySQL:
+PHPUnit uses in-memory SQLite (`phpunit.xml`) and does not require MySQL:
 
 ```bash
 docker compose exec php php artisan test
@@ -70,55 +99,31 @@ docker compose exec php php artisan test
 
 ## Redis (queues and cache)
 
-WorkBoard uses the **Redis** service from Docker Compose for queues and application cache (`QUEUE_CONNECTION=redis`, `CACHE_STORE=redis` in `.env.example`).
+Inside Docker, PHP connects to Redis at **`redis:6379`**. The PHP image includes **phpredis** (`REDIS_CLIENT=phpredis`).
 
-Inside Docker, PHP connects to Redis at **`redis:6379`** (the Compose service hostname). Port **6380** on your host maps to Redis only for tools outside the PHP container (for example `redis-cli` from the host).
-
-The PHP image includes the **phpredis** extension (`REDIS_CLIENT=phpredis`). After changing the `Dockerfile`, rebuild:
-
-```bash
-docker compose build php && docker compose up -d
-```
-
-Start Redis (if not already running):
-
-```bash
-docker compose up -d redis
-```
-
-Verify connectivity (from the PHP container):
+Verify connectivity:
 
 ```bash
 docker compose exec php php artisan tinker --execute="dump(Illuminate\Support\Facades\Redis::connection()->ping());"
 ```
 
-You should see `"PONG"`.
-
-Inspect Redis from the Redis container:
-
-```bash
-docker compose exec redis redis-cli PING
-```
-
 ### Queue worker
 
-Queued listeners and notifications (Stage 11) are processed from the **Redis** queue. Start a worker during local development:
+Queued listeners and notifications require a worker during local development:
 
 ```bash
 docker compose exec php php artisan queue:work -v
 ```
 
-Keep this process running in a separate terminal while you exercise task, comment, member, and attachment flows. Primary actions complete immediately; notification delivery runs asynchronously.
-
-Failed jobs are stored in the `failed_jobs` table per Laravel’s default configuration.
+Failed jobs use Laravel’s default `failed_jobs` table.
 
 ### Project summary cache
 
-The project show page caches derived statistics (task counts by status, member count) in Redis with explicit invalidation when tasks or members change. PHPUnit uses the **array** cache driver and does not require a running Redis instance.
+Project show displays cached task/member summary statistics in Redis, invalidated when tasks or members change. Tests use the **array** cache driver.
 
 ## REST API (Sanctum)
 
-WorkBoard exposes a JSON API under `/api` using **Laravel Sanctum** personal access tokens. Session-based web login is unchanged.
+JSON API under `/api` with personal access tokens. Web session login is unchanged.
 
 ### Obtain a token
 
@@ -129,14 +134,7 @@ curl -s -X POST http://localhost:8081/api/login \
   -d '{"email":"you@example.com","password":"your-password"}'
 ```
 
-Use the `token` value from the response:
-
-```bash
-export TOKEN="your-token-here"
-curl -s http://localhost:8081/api/user \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer $TOKEN"
-```
+Use the returned `token` as `Authorization: Bearer …` on subsequent requests.
 
 ### Representative endpoints
 
@@ -146,44 +144,30 @@ curl -s http://localhost:8081/api/user \
 | `POST` | `/api/logout` |
 | `GET` | `/api/projects` |
 | `POST` | `/api/projects` |
-| `GET` | `/api/projects/{project}` |
 | `GET` | `/api/projects/{project}/tasks` |
 | `POST` | `/api/projects/{project}/tasks` |
 | `GET` | `/api/projects/{project}/tasks/{task}/comments` |
-| `POST` | `/api/projects/{project}/tasks/{task}/comments` |
 | `GET` | `/api/projects/{project}/tags` |
-| `POST` | `/api/projects/{project}/tasks/{task}/tags` |
-| `POST` | `/api/projects/{project}/tasks/{task}/tags/{tag}/attach` |
 
-Task list query parameters mirror the web project task filters: `search`, `status`, `priority`, `tag`, `sort`, `page`, `per_page` (max 100).
+Task list query parameters: `search`, `status`, `priority`, `tag`, `sort`, `page`, `per_page` (max 100).
 
-Revoke the current token:
+## Postman
 
-```bash
-curl -s -X POST http://localhost:8081/api/logout \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-Run migrations after pulling API changes (Sanctum `personal_access_tokens` table):
-
-```bash
-docker compose exec php php artisan migrate
-```
+If present in your checkout, API collections and example environments live under `postman/`. Use a **local** environment file (gitignored) for real credentials; keep committed example files free of secrets.
 
 ## Project structure (high level)
 
-- `app/` — HTTP layer, models, policies, form requests
-- `resources/views/` — Blade templates (WorkBoard UI)
-- `routes/web.php` — Web routes
-- `database/migrations/` — Schema
-- `tests/` — PHPUnit feature and unit tests
-- `docker-compose.yml` — Local stack (Nginx, PHP, MySQL, Redis)
+- `app/` — HTTP layer, models, policies, events, listeners, API resources
+- `resources/views/` — Blade UI
+- `routes/web.php`, `routes/api.php` — Web and API routes
+- `database/migrations/`, `database/seeders/` — Schema and demo seeders
+- `tests/` — PHPUnit
+- `docker-compose.yml` — Nginx, PHP, MySQL, Redis
 
 ## Security note
 
-Never commit `.env` or real API keys, passwords, or `APP_KEY` values. Use `.env.example` as a template with safe placeholders only.
+Never commit `.env`, API tokens, or real passwords. Use `.env.example` placeholders only. Demo user passwords belong in local `.env` only.
 
 ## License
 
-No license file is included in this repository yet. All rights reserved unless you add a license later.
+No license file is included unless you add one later.

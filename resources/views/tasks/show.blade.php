@@ -27,7 +27,7 @@
                         @can('update', $task)
                             <a
                                 href="{{ route('projects.tasks.edit', [$project, $task]) }}"
-                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                             >
                                 Edit
                             </a>
@@ -44,24 +44,27 @@
                             >
                                 @csrf
                                 @method('DELETE')
-                                <button
-                                    type="submit"
-                                    class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-                                >
+                                <x-danger-button type="submit">
                                     Delete
-                                </button>
+                                </x-danger-button>
                             </form>
                         @endcan
                     </div>
                 @endcanany
             </div>
 
-            @if ($task->due_date)
-                <p class="mt-6 text-sm text-slate-600">
-                    <span class="font-medium text-slate-700">Due:</span>
-                    {{ $task->due_date->format('M j, Y') }}
-                </p>
-            @endif
+            <dl class="mt-6 flex flex-col gap-2 text-sm text-slate-600 sm:flex-row sm:flex-wrap sm:gap-x-8">
+                <div>
+                    <dt class="font-medium text-slate-700">Assignee</dt>
+                    <dd class="mt-0.5">{{ $task->assignee?->name ?? 'Unassigned' }}</dd>
+                </div>
+                @if ($task->due_date)
+                    <div>
+                        <dt class="font-medium text-slate-700">Due date</dt>
+                        <dd class="mt-0.5">{{ $task->due_date->format('M j, Y') }}</dd>
+                    </div>
+                @endif
+            </dl>
 
             @if ($task->description)
                 <div class="mt-8 border-t border-slate-100 pt-8">

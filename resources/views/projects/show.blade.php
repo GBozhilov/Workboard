@@ -19,7 +19,7 @@
                         @can('update', $project)
                             <a
                                 href="{{ route('projects.edit', $project) }}"
-                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                             >
                                 Edit
                             </a>
@@ -36,12 +36,9 @@
                             >
                                 @csrf
                                 @method('DELETE')
-                                <button
-                                    type="submit"
-                                    class="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-                                >
+                                <x-danger-button type="submit">
                                     Delete
-                                </button>
+                                </x-danger-button>
                             </form>
                         @endcan
                     </div>
@@ -274,9 +271,17 @@
             </form>
 
             @if ($totalTasksCount === 0)
-                <p class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-8 text-center text-sm text-slate-600">
-                    No tasks yet. Create the first task for this project.
-                </p>
+                <div class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-8 text-center">
+                    <p class="text-sm text-slate-600">No tasks yet. Add the first task to start tracking work in this project.</p>
+                    @can('create', [Task::class, $project])
+                        <a
+                            href="{{ route('projects.tasks.create', $project) }}"
+                            class="mt-4 inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                        >
+                            Create task
+                        </a>
+                    @endcan
+                </div>
             @elseif ($tasks->isEmpty())
                 <p class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-8 text-center text-sm text-slate-600">
                     No tasks match your current search or filters.

@@ -14,12 +14,9 @@
                 @method('PUT')
                 @include('tasks._form', ['project' => $project, 'task' => $task])
 
-                <button
-                    type="submit"
-                    class="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 sm:w-auto"
-                >
+                <x-primary-button class="w-full sm:w-auto">
                     Update task
-                </button>
+                </x-primary-button>
             </form>
         </div>
     </div>
